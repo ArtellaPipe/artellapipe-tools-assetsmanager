@@ -1,0 +1,17 @@
+artellapipe.tools.assetsmanager.widgets package
+===============================================
+
+Submodules
+----------
+
+.. toctree::
+
+   artellapipe.tools.assetsmanager.widgets.assetswidget
+
+Module contents
+---------------
+
+.. automodule:: artellapipe.tools.assetsmanager.widgets
+   :members:
+   :undoc-members:
+   :show-inheritance:

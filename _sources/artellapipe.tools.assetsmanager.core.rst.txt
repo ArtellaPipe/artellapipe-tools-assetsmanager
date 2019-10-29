@@ -1,0 +1,17 @@
+artellapipe.tools.assetsmanager.core package
+============================================
+
+Submodules
+----------
+
+.. toctree::
+
+   artellapipe.tools.assetsmanager.core.assetsmanager
+
+Module contents
+---------------
+
+.. automodule:: artellapipe.tools.assetsmanager.core
+   :members:
+   :undoc-members:
+   :show-inheritance:
