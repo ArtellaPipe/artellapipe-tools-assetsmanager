@@ -147,7 +147,8 @@ class ArtellaAssetsManager(tool.Tool, object):
 
         asset_info = asset_widget.get_asset_info()
         if not asset_info:
-            LOGGER.warning('Asset {} has not an AssetInfo widget associated to it. Skipping ...!'.format(asset_widget.get_name()))
+            LOGGER.warning(
+                'Asset {} has not an AssetInfo widget associated to it. Skipping ...!'.format(asset_widget.get_name()))
             return
 
         self._set_asset_info(asset_info)
