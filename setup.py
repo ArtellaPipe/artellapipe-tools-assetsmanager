@@ -1,5 +1,5 @@
 from setuptools import setup
 
-from artellapipe.tools.artellauploader import __version__
+from artellapipe.tools.assetsmanager import __version__
 
 setup()
