@@ -20,25 +20,20 @@ from Qt.QtWidgets import *
 from tpQtLib.core import qtutils
 from tpQtLib.widgets import stack
 
-import artellapipe.tools.assetsmanager
 from artellapipe.utils import resource, worker
-from artellapipe.core import userinfo
-from artellapipe.gui import window, waiter
+from artellapipe.core import tool, userinfo
+from artellapipe.gui import waiter
 from artellapipe.tools.assetsmanager.widgets import assetswidget
 
-logging.config.fileConfig(artellapipe.tools.assetsmanager.get_logging_config(), disable_existing_loggers=False)
-logger = logging.getLogger(__name__)
-logger.setLevel(artellapipe.tools.assetsmanager.get_logging_level())
+LOGGER = logging.getLogger()
 
 
-class ArtellaAssetsManager(window.ArtellaWindow, object):
+class ArtellaAssetsManager(tool.Tool, object):
 
-    VERSION = '0.0.1'
-    LOGO_NAME = 'assetsmanager_logo'
     USER_INFO_CLASS = userinfo.UserInfo
     ASSET_WIDGET_CLASS = assetswidget.AssetsWidget
 
-    def __init__(self, project, auto_start_assets_viewer=True):
+    def __init__(self, project, config, auto_start_assets_viewer=True):
 
         self._artella_worker = worker.Worker(app=QApplication.instance())
         self._artella_worker.workCompleted.connect(self._on_artella_worker_completed)
@@ -48,12 +43,7 @@ class ArtellaAssetsManager(window.ArtellaWindow, object):
         self._is_blocked = False
         self._asset_to_sync = None
 
-        super(ArtellaAssetsManager, self).__init__(
-            project=project,
-            name='ManagerWindow',
-            title='Manager',
-            size=(1100, 900)
-        )
+        super(ArtellaAssetsManager, self).__init__(project=project, config=config)
 
         if auto_start_assets_viewer:
             self._assets_widget.update_assets()
@@ -98,7 +88,7 @@ class ArtellaAssetsManager(window.ArtellaWindow, object):
         no_items_layout.setSpacing(0)
         no_items_widget.setLayout(no_items_layout)
         no_items_lbl = QLabel()
-        no_items_pixmap = resource.ResourceManager.instance().pixmap('no_asset_selected')
+        no_items_pixmap = resource.ResourceManager().pixmap('no_asset_selected')
         no_items_lbl.setPixmap(no_items_pixmap)
         no_items_lbl.setAlignment(Qt.AlignCenter)
         no_items_layout.addItem(QSpacerItem(0, 10, QSizePolicy.Preferred, QSizePolicy.Expanding))
@@ -157,7 +147,7 @@ class ArtellaAssetsManager(window.ArtellaWindow, object):
 
         asset_info = asset_widget.get_asset_info()
         if not asset_info:
-            logger.warning('Asset {} has not an AssetInfo widget associated to it. Skipping ...!'.format(asset_widget.get_name()))
+            LOGGER.warning('Asset {} has not an AssetInfo widget associated to it. Skipping ...!'.format(asset_widget.get_name()))
             return
 
         self._set_asset_info(asset_info)
@@ -175,20 +165,20 @@ class ArtellaAssetsManager(window.ArtellaWindow, object):
         menubar_widget.setLayout(menubar_layout)
         self._project_artella_btn = QToolButton()
         self._project_artella_btn.setText('Artella')
-        self._project_artella_btn.setIcon(resource.ResourceManager.instance().icon('artella'))
+        self._project_artella_btn.setIcon(resource.ResourceManager().icon('artella'))
         self._project_artella_btn.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self._project_folder_btn = QToolButton()
         self._project_folder_btn.setText('Project')
-        self._project_folder_btn.setIcon(resource.ResourceManager.instance().icon('folder'))
+        self._project_folder_btn.setIcon(resource.ResourceManager().icon('folder'))
         self._project_folder_btn.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         synchronize_btn = QToolButton()
         synchronize_btn.setText('Synchronize')
         synchronize_btn.setPopupMode(QToolButton.InstantPopup)
-        synchronize_btn.setIcon(resource.ResourceManager.instance().icon('sync'))
+        synchronize_btn.setIcon(resource.ResourceManager().icon('sync'))
         synchronize_btn.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         settings_btn = QToolButton()
         settings_btn.setText('Settings')
-        settings_btn.setIcon(resource.ResourceManager.instance().icon('settings'))
+        settings_btn.setIcon(resource.ResourceManager().icon('settings'))
         settings_btn.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         for i, btn in enumerate([self._project_artella_btn, self._project_folder_btn, synchronize_btn, settings_btn]):
             menubar_layout.addWidget(btn, 0, i, 1, 1, Qt.AlignCenter)
@@ -344,10 +334,3 @@ class ArtellaAssetsManager(window.ArtellaWindow, object):
             return
 
         asset.sync(file_type, sync_type)
-
-
-def run(project):
-    win = ArtellaAssetsManager(project=project)
-    win.show()
-
-    return win

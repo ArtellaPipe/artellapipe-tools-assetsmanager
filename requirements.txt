@@ -2,4 +2,4 @@
 # artellapipe-tools-assetsmanager requirements file
 # ===================================================================
 
-artellapipe-core
+artellapipe

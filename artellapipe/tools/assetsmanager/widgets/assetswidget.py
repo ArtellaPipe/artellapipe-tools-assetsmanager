@@ -20,12 +20,9 @@ from Qt.QtWidgets import *
 
 from tpQtLib.core import base, qtutils
 
-import artellapipe.tools.assetsmanager
 from artellapipe.core import defines
 
-logging.config.fileConfig(artellapipe.tools.assetsmanager.get_logging_config(), disable_existing_loggers=False)
-logger = logging.getLogger(__name__)
-logger.setLevel(artellapipe.tools.assetsmanager.get_logging_level())
+LOGGER = logging.getLogger()
 
 
 class AssetsWidget(base.BaseWidget, object):
@@ -36,7 +33,7 @@ class AssetsWidget(base.BaseWidget, object):
 
         self._project = project
         if not self._project:
-            logger.warning('Invalid project for AssetsWidget!')
+            LOGGER.warning('Invalid project for AssetsWidget!')
 
         super(AssetsWidget, self).__init__(parent=parent)
 
