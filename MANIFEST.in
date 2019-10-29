@@ -1,1 +1,2 @@
+include source/artellapipe/tools/assetsmanager/__logging__.ini
 include source/artellapipe/tools/assetsmanager/resources/images/*.*
