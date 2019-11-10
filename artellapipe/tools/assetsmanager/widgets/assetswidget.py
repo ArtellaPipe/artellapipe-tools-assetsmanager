@@ -17,10 +17,13 @@ from functools import partial
 
 from Qt.QtCore import *
 from Qt.QtWidgets import *
+from Qt.QtGui import *
 
 from tpQtLib.core import base, qtutils
 
-from artellapipe.core import defines
+import artellapipe
+from artellapipe.core import asset
+from artellapipe.utils import resource
 
 LOGGER = logging.getLogger()
 
@@ -63,13 +66,13 @@ class AssetsWidget(base.BaseWidget, object):
         asset_splitter = QSplitter(Qt.Horizontal)
         main_categories_menu_layout.addWidget(asset_splitter)
 
-        self._assets_viewer = self._project.ASSETS_VIEWER_CLASS(project=self._project, parent=self)
+        self._assets_viewer = artellapipe.AssetsViewer(project=self._project, parent=self)
         asset_splitter.addWidget(self._assets_viewer)
         self._assets_viewer.first_empty_cell()
 
         self._categories_btn_grp = QButtonGroup(self)
         self._categories_btn_grp.setExclusive(True)
-        asset_categories = self._project.asset_types if self._project else list()
+        asset_categories = artellapipe.AssetsMgr().config.get('types') or list()
         self.update_asset_categories(asset_categories)
 
     def setup_signals(self):
@@ -100,14 +103,17 @@ class AssetsWidget(base.BaseWidget, object):
 
         qtutils.clear_layout(self._categories_menu_layout)
 
-        all_asset_categories = [defines.ARTELLA_ALL_CATEGORIES_NAME]
+        all_asset_categories = [asset.ArtellaAssetFileStatus.ALL]
         all_asset_categories.extend(asset_categories)
         for category in all_asset_categories:
             new_btn = QPushButton(category)
+            new_btn.setMinimumWidth(QFontMetrics(new_btn.font()).width(category) + 10)
+            new_btn.setIcon(resource.ResourceManager().icon(category.lower()))
             new_btn.setCheckable(True)
             self._categories_menu_layout.addWidget(new_btn)
             self._categories_btn_grp.addButton(new_btn)
-            if category == defines.ARTELLA_ALL_CATEGORIES_NAME:
+            if category == asset.ArtellaAssetFileStatus.ALL:
+                new_btn.setIcon(resource.ResourceManager().icon('home'))
                 new_btn.setChecked(True)
             new_btn.toggled.connect(partial(self._change_category, category))
 

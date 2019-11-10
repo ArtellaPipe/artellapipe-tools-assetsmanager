@@ -21,8 +21,8 @@ from tpQtLib.core import qtutils
 from tpQtLib.widgets import stack
 
 from artellapipe.utils import resource, worker
-from artellapipe.core import tool, userinfo
-from artellapipe.gui import waiter
+from artellapipe.core import tool
+from artellapipe.widgets import waiter, userinfo
 from artellapipe.tools.assetsmanager.widgets import assetswidget
 
 LOGGER = logging.getLogger()
@@ -136,7 +136,6 @@ class ArtellaAssetsManager(tool.Tool, object):
         """
 
         self.save_settings()
-        self.windowClosed.emit()
         event.accept()
 
     def show_asset_info(self, asset_widget):
