@@ -20,17 +20,16 @@ from Qt.QtWidgets import *
 from tpQtLib.core import qtutils
 from tpQtLib.widgets import stack
 
+import artellapipe
 from artellapipe.utils import resource, worker
-from artellapipe.core import tool
-from artellapipe.widgets import waiter, userinfo
+from artellapipe.widgets import waiter
 from artellapipe.tools.assetsmanager.widgets import assetswidget
 
 LOGGER = logging.getLogger()
 
 
-class ArtellaAssetsManager(tool.Tool, object):
+class ArtellaAssetsManager(artellapipe.Tool, object):
 
-    USER_INFO_CLASS = userinfo.UserInfo
     ASSET_WIDGET_CLASS = assetswidget.AssetsWidget
 
     def __init__(self, project, config, auto_start_assets_viewer=True):
@@ -58,10 +57,6 @@ class ArtellaAssetsManager(tool.Tool, object):
 
     def ui(self):
         super(ArtellaAssetsManager, self).ui()
-
-        # Add User Info widget
-        self._user_info = self.USER_INFO_CLASS(project=self._project)
-        self.main_layout.addWidget(self._user_info)
 
         # Create Top Menu Bar
         self._menu_bar = self._setup_menubar()
@@ -122,6 +117,8 @@ class ArtellaAssetsManager(tool.Tool, object):
 
         splitter.addWidget(self._tab_widget)
         splitter.addWidget(self._attrs_stack)
+
+        artellapipe.Tracker().logged.connect(self._on_valid_login)
 
     def setup_signals(self):
         self._project_artella_btn.clicked.connect(self._on_open_project_in_artella)
@@ -334,3 +331,10 @@ class ArtellaAssetsManager(tool.Tool, object):
             return
 
         asset.sync(file_type, sync_type)
+
+    def _on_valid_login(self):
+        """
+        Internal callback function that is called anytime user log in into Tracking Manager
+        """
+
+        self._assets_widget.update_assets()
