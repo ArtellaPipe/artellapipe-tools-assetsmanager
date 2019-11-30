@@ -12,17 +12,19 @@ __license__ = "MIT"
 __maintainer__ = "Tomas Poveda"
 __email__ = "tpovedatd@gmail.com"
 
-import logging.config
+import logging
+from functools import partial
 
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-from tpQtLib.core import qtutils
-from tpQtLib.widgets import stack
+from tpQtLib.core import qtutils, base
+from tpQtLib.widgets import splitters, stack
 
 import artellapipe
 from artellapipe.utils import resource, worker
 from artellapipe.widgets import waiter
+from artellapipe.core import defines
 from artellapipe.tools.assetsmanager.widgets import assetswidget
 
 LOGGER = logging.getLogger()
@@ -103,6 +105,7 @@ class ArtellaAssetsManager(artellapipe.Tool, object):
         self._tab_widget.setMinimumHeight(330)
 
         self._assets_widget = self.ASSET_WIDGET_CLASS(project=self._project)
+        self._settings_widget = AssetsManagerSettingsWidget(settings=self.settings())
 
         self._tab_widget.addTab(self._assets_widget, 'Assets')
         self._tab_widget.setTabEnabled(1, False)
@@ -110,6 +113,7 @@ class ArtellaAssetsManager(artellapipe.Tool, object):
         self.main_layout.addWidget(self._main_stack)
 
         self._main_stack.addWidget(splitter)
+        self._main_stack.addWidget(self._settings_widget)
 
         self._attrs_stack.addWidget(no_items_widget)
         self._attrs_stack.addWidget(self._waiter)
@@ -123,8 +127,10 @@ class ArtellaAssetsManager(artellapipe.Tool, object):
     def setup_signals(self):
         self._project_artella_btn.clicked.connect(self._on_open_project_in_artella)
         self._project_folder_btn.clicked.connect(self._on_open_project_folder)
+        self._settings_btn.clicked.connect(self._on_open_settings)
         self._assets_widget.assetAdded.connect(self._on_asset_added)
         self._attrs_stack.animFinished.connect(self._on_attrs_stack_anim_finished)
+        self._settings_widget.closed.connect(self._on_close_settings)
 
     def closeEvent(self, event):
         """
@@ -168,19 +174,62 @@ class ArtellaAssetsManager(artellapipe.Tool, object):
         self._project_folder_btn.setText('Project')
         self._project_folder_btn.setIcon(resource.ResourceManager().icon('folder'))
         self._project_folder_btn.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
-        synchronize_btn = QToolButton()
-        synchronize_btn.setText('Synchronize')
-        synchronize_btn.setPopupMode(QToolButton.InstantPopup)
-        synchronize_btn.setIcon(resource.ResourceManager().icon('sync'))
-        synchronize_btn.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
-        settings_btn = QToolButton()
-        settings_btn.setText('Settings')
-        settings_btn.setIcon(resource.ResourceManager().icon('settings'))
-        settings_btn.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
-        for i, btn in enumerate([self._project_artella_btn, self._project_folder_btn, synchronize_btn, settings_btn]):
+        self._synchronize_btn = QToolButton()
+        self._synchronize_btn.setText('Synchronize')
+        self._synchronize_btn.setPopupMode(QToolButton.InstantPopup)
+        self._synchronize_btn.setIcon(resource.ResourceManager().icon('sync'))
+        self._synchronize_btn.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        self._settings_btn = QToolButton()
+        self._settings_btn.setText('Settings')
+        self._settings_btn.setIcon(resource.ResourceManager().icon('settings'))
+        self._settings_btn.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        for i, btn in enumerate(
+                [self._project_artella_btn, self._project_folder_btn, self._synchronize_btn, self._settings_btn]):
             menubar_layout.addWidget(btn, 0, i, 1, 1, Qt.AlignCenter)
 
+        self._setup_synchronize_menu()
+
         return menubar_widget
+
+    def _setup_synchronize_menu(self):
+        """
+        Internal function that creates the synchronize menu
+        """
+
+        sync_menu = QMenu(self)
+        sync_icon = resource.ResourceManager().icon('sync')
+
+        for asset_type in artellapipe.AssetsMgr().get_asset_types():
+            action_icon = resource.ResourceManager().icon(asset_type.lower())
+            if action_icon:
+                sync_action = QAction(action_icon, asset_type.title(), self)
+            else:
+                sync_action = QAction(asset_type.title(), self)
+            sync_menu.addAction(sync_action)
+            asset_file_types = artellapipe.AssetsMgr().get_asset_type_files(asset_type=asset_type) or list()
+            if asset_file_types:
+                asset_files_menu = QMenu(sync_menu)
+                sync_action.setMenu(asset_files_menu)
+                for asset_file_type in asset_file_types:
+                    asset_type_icon = resource.ResourceManager().icon(asset_file_type)
+                    asset_file_action = QAction(asset_type_icon, asset_file_type.title(), asset_files_menu)
+                    asset_files_menu.addAction(asset_file_action)
+                    asset_file_template = artellapipe.FilesMgr().get_template(asset_file_type)
+                    if not asset_file_template:
+                        LOGGER.warning('No File Template found for File Type: "{}"'.format(asset_file_type))
+                        asset_file_action.setEnabled(False)
+                        continue
+                    asset_file_action.triggered.connect(partial(self._on_sync_file_type, asset_type, asset_file_type))
+                all_asset_types_action = QAction(sync_icon, 'All', asset_files_menu)
+                all_asset_types_action.triggered.connect(partial(self._on_sync_all_assets_of_type, asset_type))
+                asset_files_menu.addAction(all_asset_types_action)
+
+        sync_menu.addSeparator()
+        sync_all_action = QAction(sync_icon, 'All', self)
+        sync_all_action.triggered.connect(self._on_sync_all_types)
+        sync_menu.addAction(sync_all_action)
+
+        self._synchronize_btn.setMenu(sync_menu)
 
     def _setup_asset_signals(self, asset_widget):
         """
@@ -289,6 +338,26 @@ class ArtellaAssetsManager(artellapipe.Tool, object):
 
         self._project.open_folder()
 
+    def _on_open_settings(self):
+        """
+        Internal callback function that is called when settings button is clicked
+        """
+
+        if not self._settings_widget.settings:
+            msg = 'No Settings to edit!'
+            self.show_warning_message(msg)
+            LOGGER.info(msg)
+            return
+
+        self._main_stack.slide_in_index(1)
+
+    def _on_close_settings(self):
+        """
+        Internal callback function that is called when closed signal from settings widget is emitted
+        """
+
+        self._main_stack.slide_in_index(0)
+
     def _on_asset_added(self, asset_widget):
         """
         Internal callback function that is called when a new asset widget is added to the assets viewer
@@ -338,3 +407,164 @@ class ArtellaAssetsManager(artellapipe.Tool, object):
         """
 
         self._assets_widget.update_assets()
+
+    def _on_sync_file_type(self, asset_type, file_type, sync_type=defines.ArtellaFileStatus.ALL):
+        """
+        Internal callback function that is called when a file is selected from the sync menu
+        :param file_type: str, file type to sync
+        :param sync_type: ArtellaFileStatus, type of sync we want to do
+        """
+
+        assets_to_sync = artellapipe.AssetsMgr().get_assets_by_type(asset_type)
+        if not assets_to_sync:
+            LOGGER.warning('No Assets found of type "{}" to sync!'.format(asset_type))
+            return
+
+        for asset in assets_to_sync:
+            asset.sync(file_type=file_type, sync_type=defines.ArtellaFileStatus.ALL)
+
+        self.show_ok_message('Files of type {} has been synced!'.format(file_type))
+
+    def _on_sync_all_assets_of_type(self, asset_type, ask=True):
+        """
+        Synchronizes all the assets of a given type
+        :param asset_type: str
+        :param ask: bol
+        """
+
+        assets_to_sync = artellapipe.AssetsMgr().get_assets_by_type(asset_type)
+        if not assets_to_sync:
+            LOGGER.warning('No Assets found of type "{}" to sync!'.format(asset_type))
+            return
+
+        total_assets = len(assets_to_sync)
+        if ask:
+            result = qtutils.show_question(
+                None, 'Synchronizing All {} Assets ({})'.format(asset_type, total_assets),
+                'Are you sure you want to synchronize all {} assets ({})? This can take lot of time!'.format(
+                    asset_type, total_assets))
+            if result == QMessageBox.No:
+                return
+
+        for asset in assets_to_sync:
+            asset.sync(sync_type=defines.ArtellaFileStatus.ALL)
+
+        self.show_ok_message('All assets have been synced!')
+
+    def _on_sync_all_types(self, ask=True):
+        """
+        Synchronizes all the assets
+        :param ask: bol
+        """
+
+        assets_to_sync = artellapipe.AssetsMgr().assets
+        if not assets_to_sync:
+            LOGGER.warning('No Assets found to sync!')
+            return
+
+        total_assets = len(assets_to_sync)
+        if ask:
+            result = qtutils.show_question(
+                None, 'Synchronizing All Assets ({})'.format(total_assets),
+                'Are you sure you want to synchronize all assets ({})? This will take lot of time!'.format(
+                    total_assets))
+            if result == QMessageBox.No:
+                return
+
+        for asset in assets_to_sync:
+            asset.sync(sync_type=defines.ArtellaFileStatus.ALL)
+
+
+class AssetsManagerSettingsWidget(base.BaseWidget, object):
+
+    closed = Signal()
+
+    def __init__(self, settings, parent=None):
+        super(AssetsManagerSettingsWidget, self).__init__(parent=parent)
+
+        self._settings = settings
+        self._load_settings()
+
+    def ui(self):
+        super(AssetsManagerSettingsWidget, self).ui()
+
+        self._auto_check_published_cbx = QCheckBox('Auto Check Published Versions?')
+        self.main_layout.addWidget(self._auto_check_published_cbx)
+        self._auto_check_working_cbx = QCheckBox('Auto Check Working Versions?')
+        self.main_layout.addWidget(self._auto_check_working_cbx)
+        self._auto_check_lock_cbx = QCheckBox('Check Lock/Unlock Working Versions?')
+        self.main_layout.addWidget(self._auto_check_lock_cbx)
+
+        self.main_layout.addLayout(splitters.SplitterLayout())
+        self.main_layout.addItem(QSpacerItem(0, 10, QSizePolicy.Preferred, QSizePolicy.Expanding))
+
+        bottom_layout = QHBoxLayout()
+        bottom_layout.setContentsMargins(0, 0, 0, 0)
+        bottom_layout.setSpacing(1)
+        self.main_layout.addLayout(bottom_layout)
+
+        save_icon = resource.ResourceManager().icon('save')
+        cancel_icon = resource.ResourceManager().icon('close')
+
+        self._save_btn = QPushButton('Save')
+        self._save_btn.setIcon(save_icon)
+        self._cancel_btn = QPushButton('Cancel')
+        self._cancel_btn.setIcon(cancel_icon)
+        bottom_layout.addWidget(self._save_btn)
+        bottom_layout.addWidget(self._cancel_btn)
+
+    def setup_signals(self):
+        self._save_btn.clicked.connect(self._on_save_settings)
+        self._cancel_btn.clicked.connect(self._on_close_settings)
+
+    @property
+    def settings(self):
+        return self._settings
+
+    def _load_settings(self):
+        """
+        Internal function that updates widget status taking into account settings
+        """
+
+        if not self._settings:
+            return
+
+        try:
+            auto_check_published = self._settings.getw('auto_check_published', default_value=False)
+            auto_check_working = self._settings.getw('auto_check_working', default_value=False)
+            auto_check_lock = self._settings.getw('auto_check_lock', default_value=False)
+
+            print(auto_check_published, auto_check_working, auto_check_lock)
+        except Exception as exc:
+            LOGGER.error('Something went wrong when trying to load settings: {}'.format(exc))
+
+    def _save_settings(self):
+        """
+        Internal function that saves settings taking into account current widget status
+        """
+
+        if not self._settings:
+            LOGGER.warning('Impossible to save settings because they are not defined!')
+            return
+
+        self._settings.setw('auto_check_published', self._auto_check_published_cbx.isChecked())
+        self._settings.setw('auto_check_working', self._auto_check_working_cbx.isChecked())
+        self._settings.setw('auto_check_lock', self._auto_check_lock_cbx.isChecked())
+
+    def _on_save_settings(self):
+        """
+        Internal callback function that is called when save button is pressed
+        """
+
+        try:
+            self._save_settings()
+        except Exception as exc:
+            LOGGER.error('Something went wrong when trying to save settings: {}'.format(exc))
+        self.closed.emit()
+
+    def _on_close_settings(self):
+        """
+        Internal callback function that is called when close button is pressed
+        """
+
+        self.closed.emit()

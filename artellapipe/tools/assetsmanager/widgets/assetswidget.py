@@ -22,7 +22,7 @@ from Qt.QtGui import *
 from tpQtLib.core import base, qtutils
 
 import artellapipe
-from artellapipe.core import asset
+from artellapipe.core import defines
 from artellapipe.utils import resource
 
 LOGGER = logging.getLogger()
@@ -103,7 +103,7 @@ class AssetsWidget(base.BaseWidget, object):
 
         qtutils.clear_layout(self._categories_menu_layout)
 
-        all_asset_categories = [asset.ArtellaAssetFileStatus.ALL]
+        all_asset_categories = [defines.ArtellaFileStatus.ALL]
         all_asset_categories.extend(asset_categories)
         for category in all_asset_categories:
             new_btn = QPushButton(category)
@@ -112,7 +112,7 @@ class AssetsWidget(base.BaseWidget, object):
             new_btn.setCheckable(True)
             self._categories_menu_layout.addWidget(new_btn)
             self._categories_btn_grp.addButton(new_btn)
-            if category == asset.ArtellaAssetFileStatus.ALL:
+            if category == defines.ArtellaFileStatus.ALL:
                 new_btn.setIcon(resource.ResourceManager().icon('home'))
                 new_btn.setChecked(True)
             new_btn.toggled.connect(partial(self._change_category, category))
