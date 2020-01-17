@@ -71,7 +71,8 @@ LOGGER = logging.getLogger()
 #     def __init__(self, parent=None):
 #         super(SequencesManagerBackground, self).__init__(parent)
 #
-#         self.setStyleSheet("#background {border-radius: 3px;border-style: solid;border-width: 1px;border-color: rgb(32,32,32);}")
+#         self.setStyleSheet(
+#         "#background {border-radius: 3px;border-style: solid;border-width: 1px;border-color: rgb(32,32,32);}")
 #         self.setFrameShape(QFrame.StyledPanel)
 #         self.setFrameShadow(QFrame.Raised)
 #
@@ -101,7 +102,8 @@ LOGGER = logging.getLogger()
 #     def __init__(self, parent=None):
 #         super(SequenceManagerWaiting, self).__init__(parent)
 #
-#         self.setStyleSheet("#background {border-radius: 3px;border-style: solid;border-width: 1px;border-color: rgb(32,32,32);}")
+#         self.setStyleSheet(
+#         "#background {border-radius: 3px;border-style: solid;border-width: 1px;border-color: rgb(32,32,32);}")
 #         self.setFrameShape(QFrame.StyledPanel)
 #         self.setFrameShadow(QFrame.Raised)
 #
@@ -142,7 +144,8 @@ class ShotsWidget(base.BaseWidget, object):
     def ui(self):
         super(ShotsWidget, self).ui()
 
-        self._shots_viewer = artellapipe.ShotsViewer(project=self._project, show_context_menu=self._show_viewer_menu, parent=self)
+        self._shots_viewer = artellapipe.ShotsViewer(
+            project=self._project, show_context_menu=self._show_viewer_menu, parent=self)
         self._shots_viewer.first_empty_cell()
 
         self.main_layout.addWidget(self._shots_viewer)

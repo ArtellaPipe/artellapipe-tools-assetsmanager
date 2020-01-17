@@ -67,7 +67,8 @@ class AssetsWidget(base.BaseWidget, object):
         asset_splitter = QSplitter(Qt.Horizontal)
         main_categories_menu_layout.addWidget(asset_splitter)
 
-        self._assets_viewer = artellapipe.AssetsViewer(project=self._project, show_context_menu=self._show_viewer_menu, parent=self)
+        self._assets_viewer = artellapipe.AssetsViewer(
+            project=self._project, show_context_menu=self._show_viewer_menu, parent=self)
         asset_splitter.addWidget(self._assets_viewer)
         self._assets_viewer.first_empty_cell()
 
