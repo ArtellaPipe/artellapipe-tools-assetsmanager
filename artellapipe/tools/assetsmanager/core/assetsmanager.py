@@ -19,13 +19,13 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 
 from tpQtLib.core import qtutils, base
-from tpQtLib.widgets import splitters, stack
+from tpQtLib.widgets import splitters, stack, tabs
 
 import artellapipe
 from artellapipe.utils import resource, worker
 from artellapipe.widgets import waiter
 from artellapipe.core import defines
-from artellapipe.tools.assetsmanager.widgets import assetswidget
+from artellapipe.tools.assetsmanager.widgets import assetswidget, shotswidget
 
 LOGGER = logging.getLogger()
 
@@ -33,6 +33,7 @@ LOGGER = logging.getLogger()
 class ArtellaAssetsManager(artellapipe.Tool, object):
 
     ASSET_WIDGET_CLASS = assetswidget.AssetsWidget
+    SHOTS_WIDGET_CLASS = shotswidget.ShotsWidget
 
     def __init__(self, project, config, auto_start_assets_viewer=True):
 
@@ -43,6 +44,7 @@ class ArtellaAssetsManager(artellapipe.Tool, object):
 
         self._is_blocked = False
         self._asset_to_sync = None
+        self._sequence_to_sync = None
 
         super(ArtellaAssetsManager, self).__init__(project=project, config=config)
 
@@ -71,11 +73,8 @@ class ArtellaAssetsManager(artellapipe.Tool, object):
         self.main_layout.addWidget(sep)
 
         self._main_stack = stack.SlidingStackedWidget(parent=self)
-
-        splitter = QSplitter(Qt.Horizontal)
-        splitter.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
         self._attrs_stack = stack.SlidingStackedWidget(parent=self)
+        self._shots_stack = stack.SlidingStackedWidget(parent=self)
 
         no_items_widget = QFrame()
         no_items_widget.setFrameShape(QFrame.StyledPanel)
@@ -92,6 +91,41 @@ class ArtellaAssetsManager(artellapipe.Tool, object):
         no_items_layout.addWidget(no_items_lbl)
         no_items_layout.addItem(QSpacerItem(0, 10, QSizePolicy.Preferred, QSizePolicy.Expanding))
 
+        no_shot_selected_widget = QFrame()
+        no_shot_selected_widget.setFrameShape(QFrame.StyledPanel)
+        no_shot_selected_widget.setFrameShadow(QFrame.Sunken)
+        no_shot_selected_layout = QVBoxLayout()
+        no_shot_selected_layout.setContentsMargins(0, 0, 0, 0)
+        no_shot_selected_layout.setSpacing(0)
+        no_shot_selected_widget.setLayout(no_shot_selected_layout)
+        no_shot_selected_lbl = QLabel()
+        no_sequence_selected_pixmap = resource.ResourceManager().pixmap('no_shot_selected')
+        no_shot_selected_lbl.setPixmap(no_sequence_selected_pixmap)
+        no_shot_selected_lbl.setAlignment(Qt.AlignCenter)
+        no_shot_selected_layout.addItem(QSpacerItem(0, 10, QSizePolicy.Preferred, QSizePolicy.Expanding))
+        no_shot_selected_layout.addWidget(no_shot_selected_lbl)
+        no_shot_selected_layout.addItem(QSpacerItem(0, 10, QSizePolicy.Preferred, QSizePolicy.Expanding))
+
+        no_assets_widget = QWidget()
+        no_assets_layout = QVBoxLayout()
+        no_assets_layout.setContentsMargins(2, 2, 2, 2)
+        no_assets_layout.setSpacing(2)
+        no_assets_widget.setLayout(no_assets_layout)
+        no_assets_frame = QFrame()
+        no_assets_frame.setFrameShape(QFrame.StyledPanel)
+        no_assets_frame.setFrameShadow(QFrame.Sunken)
+        no_assets_frame_layout = QHBoxLayout()
+        no_assets_frame_layout.setContentsMargins(2, 2, 2, 2)
+        no_assets_frame_layout.setSpacing(2)
+        no_assets_frame.setLayout(no_assets_frame_layout)
+        no_assets_layout.addWidget(no_assets_frame)
+        no_assets_found_label = QLabel()
+        no_assets_found_pixmap = resource.ResourceManager().pixmap('no_assets_found')
+        no_assets_found_label.setPixmap(no_assets_found_pixmap)
+        no_assets_frame_layout.addItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
+        no_assets_frame_layout.addWidget(no_assets_found_label)
+        no_assets_frame_layout.addItem(QSpacerItem(10, 0, QSizePolicy.Expanding, QSizePolicy.Preferred))
+
         self._waiter = waiter.ArtellaWaiter()
 
         self._user_info_layout = QVBoxLayout()
@@ -100,29 +134,61 @@ class ArtellaAssetsManager(artellapipe.Tool, object):
         self._user_info_widget = QWidget()
         self._user_info_widget.setLayout(self._user_info_layout)
 
-        self._tab_widget = QTabWidget()
+        self._shots_info_layout = QVBoxLayout()
+        self._shots_info_layout.setContentsMargins(0, 0, 0, 0)
+        self._shots_info_layout.setSpacing(0)
+        self._shots_info_widget = QWidget()
+        self._shots_info_widget.setLayout(self._shots_info_layout)
+
+        self._tab_widget = tabs.TearOffTabWidget()
+        self._tab_widget.setTabsClosable(False)
         self._tab_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._tab_widget.setMinimumHeight(330)
 
-        self._assets_widget = self.ASSET_WIDGET_CLASS(project=self._project)
+        self._assets_widget = self.ASSET_WIDGET_CLASS(project=self._project, show_viewer_menu=True)
+        self._shots_widget = self.SHOTS_WIDGET_CLASS(project=self._project)
         self._settings_widget = AssetsManagerSettingsWidget(settings=self.settings())
 
-        self._tab_widget.addTab(self._assets_widget, 'Assets')
-        self._tab_widget.setTabEnabled(1, False)
+        assets_widget = QWidget()
+        assets_layout = QVBoxLayout()
+        assets_layout.setContentsMargins(0, 0, 0, 0)
+        assets_layout.setSpacing(0)
+        assets_widget.setLayout(assets_layout)
+
+        shots_widget = QWidget()
+        shots_layout = QVBoxLayout()
+        shots_layout.setContentsMargins(0, 0, 0, 0)
+        shots_layout.setSpacing(0)
+        shots_widget.setLayout(shots_layout)
 
         self.main_layout.addWidget(self._main_stack)
 
-        self._main_stack.addWidget(splitter)
+        self._main_stack.addWidget(no_assets_widget)
+        self._main_stack.addWidget(self._tab_widget)
         self._main_stack.addWidget(self._settings_widget)
 
         self._attrs_stack.addWidget(no_items_widget)
         self._attrs_stack.addWidget(self._waiter)
         self._attrs_stack.addWidget(self._user_info_widget)
 
-        splitter.addWidget(self._tab_widget)
-        splitter.addWidget(self._attrs_stack)
+        self._shots_stack.addWidget(no_shot_selected_widget)
+        self._shots_stack.addWidget(self._shots_info_widget)
 
-        artellapipe.Tracker().logged.connect(self._on_valid_login)
+        assets_splitter = QSplitter(Qt.Horizontal)
+        assets_splitter.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        assets_splitter.addWidget(self._assets_widget)
+        assets_splitter.addWidget(self._attrs_stack)
+
+        shots_splitter = QSplitter(Qt.Horizontal)
+        shots_splitter.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        shots_splitter.addWidget(self._shots_widget)
+        shots_splitter.addWidget(self._shots_stack)
+
+        self._tab_widget.addTab(assets_splitter, 'Assets')
+        self._tab_widget.addTab(shots_splitter, 'Sequences | Shots')
+
+        if not artellapipe.Tracker().needs_login():
+            self._main_stack.slide_in_index(1)
 
     def setup_signals(self):
         self._project_artella_btn.clicked.connect(self._on_open_project_in_artella)
@@ -130,7 +196,10 @@ class ArtellaAssetsManager(artellapipe.Tool, object):
         self._settings_btn.clicked.connect(self._on_open_settings)
         self._assets_widget.assetAdded.connect(self._on_asset_added)
         self._attrs_stack.animFinished.connect(self._on_attrs_stack_anim_finished)
+        self._shots_widget.shotAdded.connect(self._on_shot_added)
         self._settings_widget.closed.connect(self._on_close_settings)
+        artellapipe.Tracker().logged.connect(self._on_valid_login)
+        artellapipe.Tracker().unlogged.connect(self._on_valid_unlogin)
 
     def closeEvent(self, event):
         """
@@ -154,6 +223,21 @@ class ArtellaAssetsManager(artellapipe.Tool, object):
             return
 
         self._set_asset_info(asset_info)
+
+    def show_sequence_info(self, sequence_widget):
+        """
+        Shows Sequence Info Widget UI associated to the given asset widget
+        :param sequence_widget: ArtellaSequenceWidget
+        """
+
+        sequence_info = sequence_widget.get_shot_info()
+        if not sequence_info:
+            LOGGER.warning(
+                'Sequence {} has not an SequenceInfo widget associated to it. Skipping ...!'.format(
+                    sequence_widget.get_name()))
+            return
+
+        self._set_sequence_info(sequence_info)
 
     def _setup_menubar(self):
         """
@@ -278,6 +362,43 @@ class ArtellaAssetsManager(artellapipe.Tool, object):
         self._asset_to_sync = None
         self._attrs_stack.slide_in_index(2)
 
+    def _setup_shot_signals(self, sequence_widget):
+        """
+        Internal function that sets proper signals to given sequence widget
+        This function can be extended to add new signals to added items
+        :param sequence_widget: ArtellaSequenceWidget
+        """
+
+        sequence_widget.clicked.connect(self._on_shot_clicked)
+        # sequence_widget.startSync.connect(self._on_start_asset_sync)
+
+    def _show_shot_info(self, sequence_widget):
+        """
+        Internal function that shows the sequence info widget
+        :param sequence_widget: ArtellaSequenceWidget
+        """
+
+        self.show_sequence_info(sequence_widget)
+        self._is_blocked = False
+        self._sequence_to_sync = None
+        self._shots_stack.slide_in_index(1)
+
+    def _set_sequence_info(self, sequence_info):
+        """
+        Sets the sequence info widget currently being showed
+        :param sequence_info: SequenceInfoWidget
+        """
+
+        if self._shots_info_widget == sequence_info:
+            return
+
+        qtutils.clear_layout(self._shots_info_layout)
+
+        if sequence_info:
+            self._shots_info_widget = sequence_info
+            self._shots_info_layout.addWidget(sequence_info)
+            self._shots_stack.slide_in_index(1)
+
     def _on_artella_not_available(self):
         """
         Internal callback function that is called by ArtellaUserInfo widget when Artella is not available
@@ -401,12 +522,51 @@ class ArtellaAssetsManager(artellapipe.Tool, object):
 
         asset.sync(file_type, sync_type)
 
+    def _on_shot_added(self, shot_widget):
+        """
+        Internal callback function that is called when a new shot widget is added to the sequences viewer
+        :param shot_widget: ArtellaShotWidget
+        """
+
+        if not shot_widget:
+            return
+
+        self._setup_shot_signals(shot_widget)
+
+    def _on_shot_clicked(self, shot_widget, skip_sync=True):
+        """
+        Internal callback function that is called when a shot button is clicked
+        :param shot_widget: ArtellaShotWidget
+        """
+
+        if not shot_widget or self._is_blocked:
+            return
+
+        # if skip_sync:
+        self._show_shot_info(shot_widget)
+        # else:
+        #     asset_data = asset_widget.asset.get_artella_data(update=False)
+        #     if asset_data:
+        #         self._show_asset_info(asset_widget)
+        #     else:
+        #         self._asset_to_sync = asset_widget
+        #         self._attrs_stack.slide_in_index(1)
+
     def _on_valid_login(self):
         """
         Internal callback function that is called anytime user log in into Tracking Manager
         """
 
+        self._main_stack.slide_in_index(1)
         self._assets_widget.update_assets()
+        self._shots_widget.update_shots()
+
+    def _on_valid_unlogin(self):
+        """
+        Internal callback function that is called anytime user log out from Tracking Manager
+        """
+
+        self._main_stack.slide_in_index(0)
 
     def _on_sync_file_type(self, asset_type, file_type, sync_type=defines.ArtellaFileStatus.ALL):
         """

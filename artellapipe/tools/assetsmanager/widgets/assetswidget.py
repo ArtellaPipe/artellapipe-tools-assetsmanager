@@ -32,9 +32,10 @@ class AssetsWidget(base.BaseWidget, object):
 
     assetAdded = Signal(object)
 
-    def __init__(self, project, parent=None):
+    def __init__(self, project, show_viewer_menu=False, parent=None):
 
         self._project = project
+        self._show_viewer_menu = show_viewer_menu
         if not self._project:
             LOGGER.warning('Invalid project for AssetsWidget!')
 
@@ -66,7 +67,7 @@ class AssetsWidget(base.BaseWidget, object):
         asset_splitter = QSplitter(Qt.Horizontal)
         main_categories_menu_layout.addWidget(asset_splitter)
 
-        self._assets_viewer = artellapipe.AssetsViewer(project=self._project, parent=self)
+        self._assets_viewer = artellapipe.AssetsViewer(project=self._project, show_context_menu=self._show_viewer_menu, parent=self)
         asset_splitter.addWidget(self._assets_viewer)
         self._assets_viewer.first_empty_cell()
 
