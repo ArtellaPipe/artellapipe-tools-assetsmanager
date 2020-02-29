@@ -36,5 +36,6 @@ class AssetsManagerToolset(artellapipe.Toolset, object):
 
         from artellapipe.tools.assetsmanager.widgets import assetsmanager
 
-        assets_manager = assetsmanager.ArtellaAssetsManager(project=self._project, config=self._config)
+        assets_manager = assetsmanager.ArtellaAssetsManager(
+            project=self._project, config=self._config, settings=self._settings)
         return [assets_manager]
