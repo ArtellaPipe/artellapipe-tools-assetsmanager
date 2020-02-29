@@ -18,11 +18,10 @@ from Qt.QtCore import *
 from Qt.QtWidgets import *
 
 from tpDcc.libs.qt.core import base
-from tpDcc.libs.qt.widgets import stack, label
+# from tpDcc.libs.qt.widgets import stack, label
 
 import artellapipe
-from artellapipe.widgets import spinner
-from artellapipe.utils import resource
+# from artellapipe.widgets import spinner
 
 LOGGER = logging.getLogger()
 
