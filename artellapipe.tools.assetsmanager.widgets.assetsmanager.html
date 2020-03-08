@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>artellapipe.tools.assetsmanager.widgets.assetswidget module &mdash; artellapipe-core 0.0.l documentation</title>
+  <title>artellapipe.tools.assetsmanager.widgets.assetsmanager module &mdash; artellapipe-core 0.0.l documentation</title>
   
 
   
@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -152,13 +152,13 @@
         
           <li><a href="artellapipe.tools.assetsmanager.widgets.html">artellapipe.tools.assetsmanager.widgets package</a> &raquo;</li>
         
-      <li>artellapipe.tools.assetsmanager.widgets.assetswidget module</li>
+      <li>artellapipe.tools.assetsmanager.widgets.assetsmanager module</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/artellapipe.tools.assetsmanager.widgets.assetswidget.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/artellapipe.tools.assetsmanager.widgets.assetsmanager.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -172,65 +172,8 @@
 
            <div itemprop="articleBody">
             
-  <div class="section" id="module-artellapipe.tools.assetsmanager.widgets.assetswidget">
-<span id="artellapipe-tools-assetsmanager-widgets-assetswidget-module"></span><h1>artellapipe.tools.assetsmanager.widgets.assetswidget module<a class="headerlink" href="#module-artellapipe.tools.assetsmanager.widgets.assetswidget" title="Permalink to this headline">¶</a></h1>
-<p>Module that contains widget implementation for assets manager widget</p>
-<dl class="class">
-<dt id="artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget">
-<em class="property">class </em><code class="sig-prename descclassname">artellapipe.tools.assetsmanager.widgets.assetswidget.</code><code class="sig-name descname">AssetsWidget</code><span class="sig-paren">(</span><em class="sig-param">project</em>, <em class="sig-param">show_viewer_menu=False</em>, <em class="sig-param">parent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tpQtLib.core.base.BaseWidget</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="attribute">
-<dt id="artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget.assetAdded">
-<code class="sig-name descname">assetAdded</code><em class="property"> = &lt;PySide2.QtCore.Signal object&gt;</em><a class="headerlink" href="#artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget.assetAdded" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget.clear_assets">
-<code class="sig-name descname">clear_assets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget.clear_assets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clear all the assets of the asset viewer</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget.get_main_layout">
-<code class="sig-name descname">get_main_layout</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget.get_main_layout" title="Permalink to this definition">¶</a></dt>
-<dd><p>Function that generates the main layout used by the widget
-Override if necessary on new widgets
-:return: QLayout</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget.setup_signals">
-<code class="sig-name descname">setup_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget.setup_signals" title="Permalink to this definition">¶</a></dt>
-<dd><p>Function that set up signals of the widget</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget.staticMetaObject">
-<code class="sig-name descname">staticMetaObject</code><em class="property"> = &lt;PySide2.QtCore.QMetaObject object&gt;</em><a class="headerlink" href="#artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget.staticMetaObject" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget.ui">
-<code class="sig-name descname">ui</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget.ui" title="Permalink to this definition">¶</a></dt>
-<dd><p>Function that sets up the ui of the widget
-Override it on new widgets (but always call super)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget.update_asset_categories">
-<code class="sig-name descname">update_asset_categories</code><span class="sig-paren">(</span><em class="sig-param">asset_categories</em><span class="sig-paren">)</span><a class="headerlink" href="#artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget.update_asset_categories" title="Permalink to this definition">¶</a></dt>
-<dd><p>Updates current categories with the given ones
-:param asset_categories: list(str)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget.update_assets">
-<code class="sig-name descname">update_assets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#artellapipe.tools.assetsmanager.widgets.assetswidget.AssetsWidget.update_assets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Updates the list of assets in the asset viewer</p>
-</dd></dl>
-
-</dd></dl>
-
+  <div class="section" id="artellapipe-tools-assetsmanager-widgets-assetsmanager-module">
+<h1>artellapipe.tools.assetsmanager.widgets.assetsmanager module<a class="headerlink" href="#artellapipe-tools-assetsmanager-widgets-assetsmanager-module" title="Permalink to this headline">¶</a></h1>
 </div>
 
 
