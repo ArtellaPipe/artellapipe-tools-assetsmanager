@@ -37,7 +37,7 @@ class ArtellaAssetsManager(artellapipe.ToolWidget, object):
     ASSET_WIDGET_CLASS = assetswidget.AssetsWidget
     SHOTS_WIDGET_CLASS = shotswidget.ShotsWidget
 
-    def __init__(self, project, config, settings, auto_start_assets_viewer=True):
+    def __init__(self, project, config, settings, parent, auto_start_assets_viewer=True):
 
         self._artella_worker = worker.Worker(app=QApplication.instance())
         self._artella_worker.workCompleted.connect(self._on_artella_worker_completed)
@@ -48,7 +48,7 @@ class ArtellaAssetsManager(artellapipe.ToolWidget, object):
         self._asset_to_sync = None
         self._sequence_to_sync = None
 
-        super(ArtellaAssetsManager, self).__init__(project=project, config=config, settings=settings)
+        super(ArtellaAssetsManager, self).__init__(project=project, config=config, settings=settings, parent=parent)
 
         if auto_start_assets_viewer:
             self._assets_widget.update_assets()
