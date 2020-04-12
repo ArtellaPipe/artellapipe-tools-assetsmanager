@@ -5,6 +5,7 @@ Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    artellapipe.tools.assetsmanager.widgets.assetsmanager
    artellapipe.tools.assetsmanager.widgets.shotswidget
