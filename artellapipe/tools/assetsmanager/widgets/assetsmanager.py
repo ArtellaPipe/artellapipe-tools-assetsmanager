@@ -20,7 +20,7 @@ from Qt.QtWidgets import *
 
 import tpDcc
 from tpDcc.libs.qt.core import qtutils, base
-from tpDcc.libs.qt.widgets import splitters, stack, tabs
+from tpDcc.libs.qt.widgets import dividers, stack, tabs
 
 import artellapipe
 from artellapipe.utils import worker
@@ -657,7 +657,7 @@ class AssetsManagerSettingsWidget(base.BaseWidget, object):
         self._auto_check_lock_cbx = QCheckBox('Check Lock/Unlock Working Versions?')
         self.main_layout.addWidget(self._auto_check_lock_cbx)
 
-        self.main_layout.addLayout(splitters.SplitterLayout())
+        self.main_layout.addLayout(dividers.DividerLayout())
         self.main_layout.addItem(QSpacerItem(0, 10, QSizePolicy.Preferred, QSizePolicy.Expanding))
 
         bottom_layout = QHBoxLayout()
