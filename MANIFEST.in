@@ -1,2 +1,4 @@
 include artellapipe/tools/assetsmanager/__logging__.ini
 recursive-include artellapipe/tools/assetsmanager/* *.*
+include versioneer.py
+include artellapipe/tools/assetsmanager/_version.py
