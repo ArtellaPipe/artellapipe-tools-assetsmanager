@@ -203,15 +203,6 @@ class ArtellaAssetsManager(artellapipe.ToolWidget, object):
         artellapipe.Tracker().logged.connect(self._on_valid_login)
         artellapipe.Tracker().unlogged.connect(self._on_valid_unlogin)
 
-    def closeEvent(self, event):
-        """
-        Overrides base window.ArtellaWindow closeEvent function
-        :param event: QEvent
-        """
-
-        self.save_settings()
-        event.accept()
-
     def show_asset_info(self, asset_widget):
         """
         Shows Asset Info Widget UI associated to the given asset widget
