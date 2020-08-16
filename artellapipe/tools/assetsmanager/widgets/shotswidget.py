@@ -20,7 +20,7 @@ from Qt.QtWidgets import *
 from tpDcc.libs.qt.core import base
 # from tpDcc.libs.qt.widgets import stack, label
 
-import artellapipe
+from artellapipe.widgets import shotsviewer
 # from artellapipe.widgets import spinner
 
 LOGGER = logging.getLogger()
@@ -143,7 +143,7 @@ class ShotsWidget(base.BaseWidget, object):
     def ui(self):
         super(ShotsWidget, self).ui()
 
-        self._shots_viewer = artellapipe.ShotsViewer(
+        self._shots_viewer = shotsviewer.ShotsViewer(
             project=self._project, show_context_menu=self._show_viewer_menu, parent=self)
         self._shots_viewer.first_empty_cell()
 

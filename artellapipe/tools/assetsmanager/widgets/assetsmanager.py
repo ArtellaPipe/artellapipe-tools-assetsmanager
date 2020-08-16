@@ -24,15 +24,15 @@ from tpDcc.libs.qt.widgets import dividers, stack, tabs
 
 import artellapipe
 from artellapipe.utils import worker
+from artellapipe.core import defines, tool
 from artellapipe.widgets import waiter, assetswidget
-from artellapipe.core import defines
 
 from artellapipe.tools.assetsmanager.widgets import shotswidget
 
-LOGGER = logging.getLogger()
+LOGGER = logging.getLogger('artellapipe-tools-assetsmanager')
 
 
-class ArtellaAssetsManager(artellapipe.ToolWidget, object):
+class ArtellaAssetsManager(tool.ArtellaToolWidget, object):
 
     ASSET_WIDGET_CLASS = assetswidget.AssetsWidget
     SHOTS_WIDGET_CLASS = shotswidget.ShotsWidget
